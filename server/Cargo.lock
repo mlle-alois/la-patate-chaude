@@ -3,12 +3,5 @@
 version = 3
 
 [[package]]
-name = "client"
-version = "0.1.0"
-dependencies = [
- "shared",
-]
-
-[[package]]
-name = "shared"
+name = "server"
 version = "0.1.0"
