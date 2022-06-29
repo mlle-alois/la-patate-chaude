@@ -1,4 +1,7 @@
-pub struct public_player {
+use serde::{Serialize, Deserialize};
+use serde_json;
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PublicPlayer {
     name: String,
     stream_id: String,
     score: i32,
@@ -7,7 +10,7 @@ pub struct public_player {
     total_used_time: f64
 }
 
-impl public_player {
+impl PublicPlayer {
     fn name(&self) -> &str {
         &self.name
     }

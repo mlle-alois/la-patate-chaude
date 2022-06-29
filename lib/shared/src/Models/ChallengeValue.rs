@@ -1,4 +1,7 @@
-pub enum challenge_value {
+use serde::{Serialize, Deserialize};
+use serde_json;
+#[derive(Debug, Serialize, Deserialize)]
+pub enum ChallengeValue {
     Unreachable,
     Timeout,
     BadResult { used_time: f64, next_target: String },
