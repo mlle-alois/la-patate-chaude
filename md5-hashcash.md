@@ -2,12 +2,12 @@
 
 En entrée du challenge, soient:
 
-* `message`: une chaîne de caractères en UTF8,
+* `Message`: une chaîne de caractères en UTF8,
 * `complexity`: un nombre de type `u32`
 
 Soit une valeur nommée `seed` (de type `u64`).
 Soit la chaîne de caractères jouxtant la valeur `seed` écrite en une chaine de 16 caractères
-hexadécimaux (lettres en majuscules et complétés à gauche par des `0`) et concaténée à un message fourni en entrée du
+hexadécimaux (lettres en majuscules et complétés à gauche par des `0`) et concaténée à un Message fourni en entrée du
 challenge.
 
 L'objet est de trouver une valeur de `seed` telle que le hashage [MD5](https://fr.wikipedia.org/wiki/MD5) (écrit sur 32
@@ -22,7 +22,7 @@ Le résultat attendu est de la forme:
 
 Par exemple, pour l'entrée
 
-| complexity | message     |
+| complexity | Message     |
 |------------|-------------|
 | 9          | `"hello"`   |
 
@@ -49,14 +49,14 @@ Nous utiliserons ainsi les types suivants en entrée et sortie de du challenge `
 struct MD5HashCashInput {
     // complexity in bits
     complexity: u32,
-    // message to sign
-    message: String,
+    // Message to sign
+    Message: String,
 }
 
 struct MD5HashCashOutput {
     // Seed used to solve the challenge
     seed: u64,
-    // hashcode found using seed + message
+    // hashcode found using seed + Message
     hashcode: String,
 }
 ```
