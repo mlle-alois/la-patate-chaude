@@ -5,9 +5,12 @@ use std::io::{Read, Write};
 use std::mem::size_of;
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::vec;
-
+use crate::ChallengeAnswer::ChallengeAnswer::ChallengeName;
 use serde::{Deserialize, Serialize};
 use serde_json;
+use shared::Models::{ChallengeAnswer, ChallengeValue};
+use shared::Models::ChallengeOutput::ChallengeOutput;
+use shared::Models::ChallengeResult::ChallengeResult;
 
 use shared::Models::message::Message;
 use shared::Models::message::Message::{Subscribe, Welcome};
@@ -20,12 +23,13 @@ fn main() {
     // create multiple clients with TcpStream to connect to the server "localhost:7878"
     let subscribe = Message::Subscribe(subscribe{name: "yolo".parse().unwrap() });
     //let h = Message::Welcome(Welcome { version: 2 });
-    let helloMessage = Message::Hello;
+
 
     let mut tcpStream = TcpStream::connect("localhost:7878");
     match tcpStream {
         Ok(mut tcpStream) => {
             // Hello
+            let helloMessage = Message::Hello;
             let serializeHM = serializeMessage(&helloMessage);
             writeMessage(&tcpStream, &serializeHM);
             // Welcome
@@ -49,6 +53,27 @@ fn main() {
             let challengeLenght = messageLength(&tcpStream);
             let challenge = readMessage(&tcpStream, challengeLenght);
             println!("{:?}", challenge);
+            // ChallengeResult
+            let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+                name: ChallengeName(ChallengeOutput {
+                    seed: 12345678,
+                    hashcode: "abcdefghijklmnopqrstuvwxyz".to_string(),
+                }),
+                next_target: "yolo".to_string(),
+
+            });
+            let serializeCR = serializeMessage(&challengeResultMessage);
+            writeMessage(&tcpStream, &serializeCR);
+
+            // RoundSummary
+            let roundSummaryLenght = messageLength(&tcpStream);
+            let roundSummary = readMessage(&tcpStream, roundSummaryLenght);
+            println!("{:?}", roundSummary);
+
+            // EndOfGame
+            let endOfGameLenght = messageLength(&tcpStream);
+            let endOfGame = readMessage(&tcpStream, endOfGameLenght);
+            println!("{:?}", endOfGame);
         }
         Err(err) => panic!("Cannot connect : {err}")
     }

@@ -5,7 +5,10 @@ use crate::Models::PublicLeaderBoard::PublicLeaderBoard;
 use crate::Models::Challenge::Challenge;
 use serde::{Serialize, Deserialize};
 use serde_json;
+use crate::Models::ChallengeResult::ChallengeResult;
+use crate::Models::EndOfGame::EndOfGame;
 use crate::Models::PublicPlayer::PublicPlayer;
+use crate::Models::RoundSummary::RoundSummary;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Message {
@@ -15,4 +18,7 @@ pub enum Message {
     SubscribeResult(subscribeResult),
     PublicLeaderBoard(Vec<PublicPlayer>),
     Challenge(Challenge),
+    ChallengeResult(ChallengeResult),
+    RoundSummary(RoundSummary),
+    EndOfGame(EndOfGame),
 }
