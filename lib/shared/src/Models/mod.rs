@@ -14,4 +14,6 @@ pub mod ChallengeResult;
 pub mod ReportedChallengeResult;
 pub mod RoundSummary;
 pub mod EndOfGame;
+pub mod MD5HashCashInput;
+pub mod MD5HashCashOutput;
 

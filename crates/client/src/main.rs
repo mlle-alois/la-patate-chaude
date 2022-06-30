@@ -126,6 +126,16 @@ fn main() {
             }
         }
     }
+    // stays string
+    // seed :decimal += 1;
+    // format : hexadecimal = format!("{:x}", seed);
+    // seed + message
+    // hashcode = md5::compute(format.as_bytes());
+    // hashcode: hexadecimal = format!("{:x}", hashcode);
+    // format hashcode to binary
+    // Determine the number of 0s in the binary representation of the hashcode.
+    // If the number of 0s is > complexity, the hashcode is valid.
+
 }
 
 
