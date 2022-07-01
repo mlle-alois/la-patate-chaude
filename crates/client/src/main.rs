@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use std::mem::size_of;
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::vec;
-use crate::ChallengeAnswer::ChallengeAnswer::ChallengeName;
+//use crate::ChallengeAnswer::ChallengeAnswer::ChallengeName;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use shared::Models::{ChallengeAnswer, ChallengeValue};
@@ -16,12 +16,16 @@ use shared::Models::message::Message;
 use shared::Models::message::Message::{Subscribe, Welcome};
 use shared::Models::subscribe::subscribe;
 use shared::Models::welcome::welcome;
+use rand::Rng;
+use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
 
 fn main() {
     //let digest = md5::compute(b"abcdefghijklmnopqrstuvwxyz");
     //assert_eq!(format!("{:x}", digest), "c3fcd3d76192e4007dfb496cca67e13b");
     // create multiple clients with TcpStream to connect to the server "localhost:7878"
-    let subscribe = Message::Subscribe(subscribe{name: "yolo".parse().unwrap() });
+/*
+    let randomPlayerName = generate_random_string(10);
+    let subscribe = Message::Subscribe(subscribe { name: randomPlayerName.parse().unwrap() });
     //let h = Message::Welcome(Welcome { version: 2 });
 
 
@@ -36,46 +40,54 @@ fn main() {
             let welcomeMessageLenght = messageLength(&tcpStream);
             let welcomeMessage = readMessage(&tcpStream, welcomeMessageLenght);
             println!("{:?}", welcomeMessage);
-            // Subcription
+            // Subcription player 1
             let serializeSubscribe = serializeMessage(&subscribe);
             writeMessage(&tcpStream, &serializeSubscribe);
-            // SubscribeResult
-            let SubscribeResultLength= messageLength(&tcpStream);
+            // SubscribeResult player 1
+            let SubscribeResultLength = messageLength(&tcpStream);
             let SubscribeResult = readMessage(&tcpStream, SubscribeResultLength);
             println!("{:?}", SubscribeResult);
 
+*/
+    let mut tcpStream1 = connect_and_subscribe_player();
+    let mut tcpStream2 = connect_and_subscribe_player();
             /** Round **/
-            // PublicLeaderBoard
-            let publicLeaderBoardLenght = messageLength(&tcpStream);
-            let publicLeaderBoard = readMessage(&tcpStream, publicLeaderBoardLenght);
-            println!("{:?}", publicLeaderBoard);
-            // Challenge
-            let challengeLenght = messageLength(&tcpStream);
-            let challenge = readMessage(&tcpStream, challengeLenght);
-            println!("{:?}", challenge);
-            // ChallengeResult
-            let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
-                name: ChallengeName(ChallengeOutput {
-                    seed: 12345678,
-                    hashcode: "abcdefghijklmnopqrstuvwxyz".to_string(),
-                }),
-                next_target: "yolo".to_string(),
 
-            });
-            let serializeCR = serializeMessage(&challengeResultMessage);
-            writeMessage(&tcpStream, &serializeCR);
 
-            // RoundSummary
-            let roundSummaryLenght = messageLength(&tcpStream);
-            let roundSummary = readMessage(&tcpStream, roundSummaryLenght);
-            println!("{:?}", roundSummary);
+    loop {
+        // PublicLeaderBoard
+        let publicLeaderBoardLenght = messageLength(&tcpStream1);
+        let publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
+        println!("{:?}", publicLeaderBoard);
+        // Challenge
+        let challengeLenght = messageLength(&tcpStream1);
+        let challenge = readMessage(&tcpStream1, challengeLenght);
+        println!("{:?}yo", challenge);
 
+    // ChallengeResult
+    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+        answer: MD5HashCash(ChallengeOutput {
+            seed: 12345678,
+            hashcode: "abcdefghijklmnopqrstuvwxyz".to_string(),
+        }),
+        next_target: "yolo".to_string(),
+
+    });
+    let serializeCR = serializeMessage(&challengeResultMessage);
+    writeMessage(&tcpStream1, &serializeCR);
+
+        // RoundSummary
+        let roundSummaryLenght = messageLength(&tcpStream1);
+        let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
+        println!("{:?}", roundSummary);
+    }
+            /*
             // EndOfGame
             let endOfGameLenght = messageLength(&tcpStream);
             let endOfGame = readMessage(&tcpStream, endOfGameLenght);
-            println!("{:?}", endOfGame);
-        }
-        Err(err) => panic!("Cannot connect : {err}")
+            println!("{:?}", endOfGame);*/
+
+       // Err(err) => panic!("Cannot connect : {err}")
     }
 
     fn serializeMessage(msg: &Message) -> String {
@@ -126,6 +138,16 @@ fn main() {
             }
         }
     }
+
+
+
+    // generate random string of length 10
+    fn generate_random_string(len: usize) -> String {
+        let mut rng = rand::thread_rng();
+        let random_string: String = (0..len).map(|_| rng.sample(rand::distributions::Alphanumeric)).collect();
+        random_string
+    }
+
     // stays string
     // seed :decimal += 1;
     // format : hexadecimal = format!("{:x}", seed);
@@ -135,8 +157,63 @@ fn main() {
     // format hashcode to binary
     // Determine the number of 0s in the binary representation of the hashcode.
     // If the number of 0s is > complexity, the hashcode is valid.
+    fn determine_complexity(hashcode: &str) -> u32 {
+        let mut count = 0;
+        for c in hashcode.chars() {
+            if c == '0' {
+                count += 1;
+            }
+        }
+        count
+    }
+    fn is_hashcode_valid(hashcode: &str, complexity: u32) -> bool {
+        determine_complexity(hashcode) > complexity
+    }
+    fn is_hashcode_valid_with_seed(hashcode: &str, complexity: u32, seed: u32) -> bool {
+        determine_complexity(hashcode) > complexity
+    }
+    fn is_hashcode_valid_with_seed_and_message(hashcode: &str, complexity: u32, seed: u32, message: &str) -> bool {
+        determine_complexity(hashcode) > complexity
+    }
 
-}
+    fn format_seed_and_message(seed: u32, message: &str) -> String {
+        let format = format!("{:x}", seed);
+        let hashcode = md5::compute(format.as_bytes());
+        let hashcode = format!("{:x}", hashcode);
+        format!("{}{}", hashcode, message)
+    }
+
+    fn connect_and_subscribe_player() -> TcpStream {
+        let randomPlayerName = generate_random_string(10);
+        let subscribe = Message::Subscribe(subscribe { name: randomPlayerName.parse().unwrap() });
+        //let h = Message::Welcome(Welcome { version: 2 });
+
+
+        let mut tcpStream = TcpStream::connect("localhost:7878");
+        match tcpStream {
+            Ok(mut tcpStream) => {
+                // Hello
+                let helloMessage = Message::Hello;
+                let serializeHM = serializeMessage(&helloMessage);
+                writeMessage(&tcpStream, &serializeHM);
+                // Welcome
+                let welcomeMessageLenght = messageLength(&tcpStream);
+                let welcomeMessage = readMessage(&tcpStream, welcomeMessageLenght);
+                println!("{:?}", welcomeMessage);
+                // Subcription player 1
+                let serializeSubscribe = serializeMessage(&subscribe);
+                writeMessage(&tcpStream, &serializeSubscribe);
+                // SubscribeResult player 1
+                let SubscribeResultLength = messageLength(&tcpStream);
+                let SubscribeResult = readMessage(&tcpStream, SubscribeResultLength);
+                println!("{:?}", SubscribeResult);
+                tcpStream
+            }
+
+            Err(err) => panic!("Cannot connect : {err}")
+        }
+    }
+
 
 
 

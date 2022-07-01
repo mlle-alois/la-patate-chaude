@@ -10,3 +10,4 @@ shared = {path = "../../lib/shared" }
 serde = { version = "1", features = ["serde_derive"]}
 serde_json = "1"
 md5 = "0.7.0"
+rand = "0.5.5"

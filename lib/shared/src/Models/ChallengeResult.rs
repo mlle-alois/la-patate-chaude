@@ -6,6 +6,6 @@ use crate::Models::ChallengeOutput::ChallengeOutput;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ChallengeResult {
-    pub name: ChallengeAnswer,
+    pub answer: ChallengeAnswer,
     pub next_target: String,
 }

@@ -6,5 +6,5 @@ use crate::Models::ChallengeOutput::ChallengeOutput;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ChallengeAnswer {
-    ChallengeName(ChallengeOutput)
+    MD5HashCash(ChallengeOutput)
 }
