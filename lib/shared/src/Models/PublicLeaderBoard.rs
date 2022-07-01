@@ -4,5 +4,5 @@ use serde_json;
 #[derive(Debug, Serialize, Deserialize)]
 
 pub struct PublicLeaderBoard {
-    players: Vec<PublicPlayer>
+    pub players: Vec<PublicPlayer>
 }

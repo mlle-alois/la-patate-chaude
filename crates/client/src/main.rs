@@ -1,5 +1,6 @@
 extern crate core;
 
+use std::borrow::Borrow;
 use std::fmt::format;
 use std::io::{Read, Write};
 use std::mem::size_of;
@@ -11,13 +12,13 @@ use serde_json;
 use shared::Models::{ChallengeAnswer, ChallengeValue};
 use shared::Models::ChallengeOutput::ChallengeOutput;
 use shared::Models::ChallengeResult::ChallengeResult;
-
 use shared::Models::message::Message;
-use shared::Models::message::Message::{Subscribe, Welcome};
+use shared::Models::message::Message::{ PublicLeaderBoard,Subscribe, Welcome};
 use shared::Models::subscribe::subscribe;
 use shared::Models::welcome::welcome;
 use rand::Rng;
 use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
+use shared::Models::PublicPlayer::PublicPlayer;
 
 fn main() {
     //let digest = md5::compute(b"abcdefghijklmnopqrstuvwxyz");
@@ -48,17 +49,26 @@ fn main() {
             let SubscribeResult = readMessage(&tcpStream, SubscribeResultLength);
             println!("{:?}", SubscribeResult);
 
+
 */
-    let mut tcpStream1 = connect_and_subscribe_player();
-    let mut tcpStream2 = connect_and_subscribe_player();
+
+    let playerName = generate_random_string(10);
+    let mut tcpStream1 = connect_and_subscribe_player(playerName.clone());
             /** Round **/
 
 
     loop {
         // PublicLeaderBoard
         let publicLeaderBoardLenght = messageLength(&tcpStream1);
-        let publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
+        let mut publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
         println!("{:?}", publicLeaderBoard);
+
+
+        /*let other_players = get_other_players_name(&publicLeaderBoard,&playerName);
+        println!("{:?}", other_players);
+        let target = pick_random_player_name(&other_players);*/
+
+
         // Challenge
         let challengeLenght = messageLength(&tcpStream1);
         let challenge = readMessage(&tcpStream1, challengeLenght);
@@ -70,7 +80,7 @@ fn main() {
             seed: 12345678,
             hashcode: "abcdefghijklmnopqrstuvwxyz".to_string(),
         }),
-        next_target: "yolo".to_string(),
+        next_target: "name".to_string(),
 
     });
     let serializeCR = serializeMessage(&challengeResultMessage);
@@ -129,7 +139,6 @@ fn main() {
                 println!("{:?}", buffer);
                 let x = String::from_utf8_lossy(&buffer);
                 println!("{:?}dd", x);
-                //let welcome = serde_json::from_slice::<welcome>(&buffer);
                 let data = serde_json::from_str::<Message>(&*x);
                 data.unwrap()
             }
@@ -139,6 +148,33 @@ fn main() {
         }
     }
 
+fn get_other_players_name(publicLeaderBoard : &Message, playerToExclude: &String) -> Vec<String> {
+    let mut other_players: Vec<String> = vec![];
+    let publicLeaderBoard = publicLeaderBoard.clone();
+    match publicLeaderBoard {
+        Message::PublicLeaderBoard(publicLeaderBoard) => {
+            for player in publicLeaderBoard {
+                if player.name.ne(playerToExclude) {
+                    other_players.push(player.name.clone());
+                }
+            }
+        }
+        _ => {
+            panic!("Not a PublicLeaderBoard");
+        }
+
+    }
+    other_players
+
+    //result.players.filter(|x| x.name.ne( playerToExclude)).collect()
+    //publicLeaderBoard::<PublicLeaderBoard>().players.iter().filter(|player| player.name != playerToExclude).map(|player| player.clone()).collect()
+
+}
+fn pick_random_player_name(player_names: &Vec<String>) -> String {
+    let mut rng = rand::thread_rng();
+    let index = rng.gen_range(0, player_names.len());
+    player_names[index].clone()
+}
 
 
     // generate random string of length 10
@@ -183,9 +219,8 @@ fn main() {
         format!("{}{}", hashcode, message)
     }
 
-    fn connect_and_subscribe_player() -> TcpStream {
-        let randomPlayerName = generate_random_string(10);
-        let subscribe = Message::Subscribe(subscribe { name: randomPlayerName.parse().unwrap() });
+    fn connect_and_subscribe_player(name:String) -> TcpStream {
+        let subscribe = Message::Subscribe(subscribe { name: name.parse().unwrap() });
         //let h = Message::Welcome(Welcome { version: 2 });
 
 

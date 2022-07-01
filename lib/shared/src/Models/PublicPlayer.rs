@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 use serde_json;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PublicPlayer {
-    name: String,
+    pub name: String,
     stream_id: String,
     score: i32,
     steps: u32,
