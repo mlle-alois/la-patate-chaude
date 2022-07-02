@@ -9,13 +9,14 @@ use std::vec;
 //use crate::ChallengeAnswer::ChallengeAnswer::ChallengeName;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use shared::Models::{ChallengeAnswer, ChallengeValue};
+use shared::Models::{ChallengeAnswer, ChallengeValue, message};
 use shared::Models::ChallengeResult::ChallengeResult;
 use shared::Models::message::Message;
 use shared::Models::message::Message::{ PublicLeaderBoard,Subscribe, Welcome};
 use shared::Models::subscribe::subscribe;
 use shared::Models::welcome::welcome;
 use rand::Rng;
+use serde_json::json;
 use shared::Models::Challenge::Challenge;
 use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
 use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
@@ -35,32 +36,53 @@ fn main() {
         let mut publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
         println!("{:?}", publicLeaderBoard);
 
-
         /*let other_players = get_other_players_name(&publicLeaderBoard,&playerName);
         println!("{:?}", other_players);
         let target = pick_random_player_name(&other_players);*/
 
 
         // Challenge
-        let challengeLenght = messageLength(&tcpStream1);
-        let challenge = readMessage(&tcpStream1, challengeLenght);
-        println!("{:?}yo", challenge);
+        let messageLenght = messageLength(&tcpStream1);
+        let message = readMessage(&tcpStream1, messageLenght);
+        println!("{:?}yo", message);
 
 
-       // let val = challenge.Challenge.MD5HashCash;
-    // ChallengeResult
-    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
-        answer: MD5HashCash(generate_hash(9,"hello")),
-        next_target: playerName.to_string(),
+        if get_type(&message) == "Challenge" {
+            let challenge = message;
 
-    });
-    let serializeCR = serializeMessage(&challengeResultMessage);
-    writeMessage(&tcpStream1, &serializeCR);
+            match challenge {
+                Message::Challenge(challenge) => {
+                        println!("md5: {:?}yo", challenge);
+                        let md5 = &challenge;
+                    match md5 {
+                        Challenge::MD5HashCash(md5) => {
+                            println!("md5: {:?}yo", md5.complexity);
+                            println!("md5: {:?}yo", md5.message);
+                            // ChallengeResult
+                            let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+                                answer: MD5HashCash(generate_hash(md5.complexity,&md5.message.clone())),
+                                next_target: playerName.to_string(),
+
+                            });
+                            let serializeCR = serializeMessage(&challengeResultMessage);
+                            writeMessage(&tcpStream1, &serializeCR);
+                        }
+                        _ => {
+                            panic!("Not a MD5HashCash");
+                        }
+                    }
+                }
+                _ => {
+                    panic!("Not a Challenge");
+                }
+            }
+        }
 
         // RoundSummary
         let roundSummaryLenght = messageLength(&tcpStream1);
         let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
         println!("{:?}", roundSummary);
+
     }
             /*
             // EndOfGame
@@ -70,6 +92,39 @@ fn main() {
 
        // Err(err) => panic!("Cannot connect : {err}")
     }
+
+fn get_type(dataType: &Message) -> String {
+    match dataType {
+        Message::Challenge(_) => {
+            "Challenge".to_string()
+        }
+        Message::ChallengeResult(_) => {
+            "ChallengeResult".to_string()
+        }
+        Message::Welcome(_) => {
+            "Welcome".to_string()
+        }
+        Message::Hello => {
+            "Hello".to_string()
+        }
+        Message::Subscribe(_) => {
+            "Subscribe".to_string()
+        }
+        Message::SubscribeResult(_) => {
+            "SubscribeResult".to_string()
+        }
+        Message::EndOfGame(_) => {
+            "EndOfGame".to_string()
+        }
+        Message::PublicLeaderBoard(_) => {
+            "PublicLeaderBoard".to_string()
+        }
+        Message::RoundSummary(_) => {
+            "RoundSummary".to_string()
+        }
+        _ => {"".to_string()}
+    }
+}
 
     fn serializeMessage(msg: &Message) -> String {
         let serialized = serde_json::to_string(&msg);
@@ -174,17 +229,6 @@ fn pick_random_player_name(player_names: &Vec<String>) -> String {
         count
     }
 
-fn get_type(dataType: Message) -> String {
-    match dataType {
-        Message::Challenge(_) => {
-            "Challenge".to_string()
-        }
-        _ => {}
-    }
-}
-
-
-
 
     fn format_seed_and_message(seed: u32, message: &str) -> String {
         let format = format!("{:x}", seed);
@@ -199,7 +243,7 @@ fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
     let mut seed:String;
     let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
     loop  {
-        seed = create_seed(complexity,index);
+        seed = create_seed(index);
         let elem = format!("{}{}", seed, message);
         // println!("elem : {:?}", elem);
         let hashcode = md5::compute(elem);
@@ -217,11 +261,8 @@ fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
     }
     result
 }
-fn create_seed(complexity :u32,val: u32)->String{
-    let elem = format!("{:x}", val);
-    if(elem.len() + complexity as usize > 16){
-        panic!("Failed seed creation!");
-    }
+fn create_seed(val: u32)->String{
+
     let hexa= format!("{:01$x}", val, 16);
     // println!("{}", elem);
     hexa

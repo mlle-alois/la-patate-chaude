@@ -10,6 +10,7 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 use serde_json;
+use serde_json::json;
 use shared::Models::Challenge::Challenge;
 use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
 use shared::Models::ChallengeResult::ChallengeResult;
@@ -25,14 +26,16 @@ fn main() {
     println!("test : {:?}", create_seed(9,255));*/
    // let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
     //let mut result:MD5HashCashInput = MD5HashCashInput { seed: 0, hashcode: "".to_string() };
-    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+   /* let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
         answer: MD5HashCash(generate_hash(9,"hello")),
         next_target: "test".to_string(),
 
     });
 
     let challengeType = get_type(challengeResultMessage);
-    println!("{:?}", challengeType);
+    println!("{:?}", challengeType);*/
+    let obj = json!({"PublicLeaderBoard": Array([Object({"is_active": Bool(true), "name": String("2xjxkuzw6K"), "score": Number(0), "steps": Number(0), "stream_id": String("127.0.0.1:55990"), "total_used_time": Number(0.0)})])});
+    println!("publicLeaderBoardjson : {:?}", publicLeaderBoardjson["PublicLeaderBoard"][0]);
 }
 fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
     let mut verif = false;
