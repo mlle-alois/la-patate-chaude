@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use crate::Models::ChallengeInput::ChallengeInput;
-use crate::Models::ChallengeOutput::ChallengeOutput;
+use crate::Models::MD5HashCashOutput::MD5HashCashOutput;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum ChallengeAnswer {
-    MD5HashCash(ChallengeOutput)
+    MD5HashCash(MD5HashCashOutput)
 }

@@ -10,14 +10,15 @@ use std::vec;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use shared::Models::{ChallengeAnswer, ChallengeValue};
-use shared::Models::ChallengeOutput::ChallengeOutput;
 use shared::Models::ChallengeResult::ChallengeResult;
 use shared::Models::message::Message;
 use shared::Models::message::Message::{ PublicLeaderBoard,Subscribe, Welcome};
 use shared::Models::subscribe::subscribe;
 use shared::Models::welcome::welcome;
 use rand::Rng;
+use shared::Models::Challenge::Challenge;
 use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
+use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
 use shared::Models::PublicPlayer::PublicPlayer;
 
 fn main() {
@@ -74,13 +75,12 @@ fn main() {
         let challenge = readMessage(&tcpStream1, challengeLenght);
         println!("{:?}yo", challenge);
 
+
+       // let val = challenge.Challenge.MD5HashCash;
     // ChallengeResult
     let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
-        answer: MD5HashCash(ChallengeOutput {
-            seed: 12345678,
-            hashcode: "abcdefghijklmnopqrstuvwxyz".to_string(),
-        }),
-        next_target: "name".to_string(),
+        answer: MD5HashCash(generate_hash(9,"hello")),
+        next_target: playerName.to_string(),
 
     });
     let serializeCR = serializeMessage(&challengeResultMessage);
@@ -202,7 +202,7 @@ fn pick_random_player_name(player_names: &Vec<String>) -> String {
         }
         count
     }
-    fn is_hashcode_valid(hashcode: &str, complexity: u32) -> bool {
+/*    fn is_hashcode_valid(hashcode: &str, complexity: u32) -> bool {
         determine_complexity(hashcode) > complexity
     }
     fn is_hashcode_valid_with_seed(hashcode: &str, complexity: u32, seed: u32) -> bool {
@@ -210,7 +210,7 @@ fn pick_random_player_name(player_names: &Vec<String>) -> String {
     }
     fn is_hashcode_valid_with_seed_and_message(hashcode: &str, complexity: u32, seed: u32, message: &str) -> bool {
         determine_complexity(hashcode) > complexity
-    }
+    }*/
 
     fn format_seed_and_message(seed: u32, message: &str) -> String {
         let format = format!("{:x}", seed);
@@ -218,7 +218,82 @@ fn pick_random_player_name(player_names: &Vec<String>) -> String {
         let hashcode = format!("{:x}", hashcode);
         format!("{}{}", hashcode, message)
     }
+fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
+    let mut verif = false;
+    let mut index = 0;
+    let mut hash:String;
+    let mut seed:String;
+    let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
+    loop  {
+        seed = create_seed(complexity,index);
+        let elem = format!("{}{}", seed, message);
+        // println!("elem : {:?}", elem);
+        let hashcode = md5::compute(elem);
+     //   println!("seed : {:?} hashcode : {:?} ", seed,hashcode);
+        hash =format!("{:x}", hashcode);
+        // println!("hashcode : {:?}", str);
+        verif=is_hashcode_valid(hash,complexity);
+        if(verif){
+          //  println!("hashcode : {:?}", hashcode);
+            result.seed= index as u64;
+            result.hashcode=format!("{:x}", hashcode);
+            break;
+        }
+        index=index+1;
+    }
+    result
+}
+fn create_seed(complexity :u32,val: u32)->String{
+    let elem = format!("{:x}", val);
+    if(elem.len() + complexity as usize > 16){
+        panic!("Failed seed creation!");
+    }
+    let hexa= format!("{:01$x}", val, 16);
+    // println!("{}", elem);
+    hexa
+}
+fn convert_to_binary_from_hex(hex: String) -> String {
+    let to_binary = hex[2 ..]
+        .chars()
+        .map(|c| to_binary(c))
+        .collect();
 
+    to_binary
+}
+fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
+    let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
+    println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
+    let mut verif = true;
+    for index in 0..complexity {
+        if(val_in_binary.chars().nth(index as usize).unwrap() != '0'){
+            verif = false;
+        }
+    }
+    verif
+}
+
+fn to_binary(c: char) -> String {
+    let b = match c {
+        '0' => "0000",
+        '1' => "0001",
+        '2' => "0010",
+        '3' => "0011",
+        '4' => "0100",
+        '5' => "0101",
+        '6' => "0110",
+        '7' => "0111",
+        '8' => "1000",
+        '9' => "1001",
+        'A' => "1010",
+        'B' => "1011",
+        'C' => "1100",
+        'D' => "1101",
+        'E' => "1110",
+        'F' => "1111",
+        _  => "",
+    };
+    b.to_string()
+}
     fn connect_and_subscribe_player(name:String) -> TcpStream {
         let subscribe = Message::Subscribe(subscribe { name: name.parse().unwrap() });
         //let h = Message::Welcome(Welcome { version: 2 });
