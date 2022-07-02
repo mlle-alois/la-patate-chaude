@@ -10,7 +10,7 @@ use crate::Models::EndOfGame::EndOfGame;
 use crate::Models::PublicPlayer::PublicPlayer;
 use crate::Models::RoundSummary::RoundSummary;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize,PartialEq)]
 pub enum Message {
     Hello,
     Welcome(welcome),

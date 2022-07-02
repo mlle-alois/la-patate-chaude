@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use serde_json;
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ChallengeValue {
     Unreachable,
     Timeout,

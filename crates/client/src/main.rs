@@ -22,36 +22,7 @@ use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
 use shared::Models::PublicPlayer::PublicPlayer;
 
 fn main() {
-    //let digest = md5::compute(b"abcdefghijklmnopqrstuvwxyz");
-    //assert_eq!(format!("{:x}", digest), "c3fcd3d76192e4007dfb496cca67e13b");
-    // create multiple clients with TcpStream to connect to the server "localhost:7878"
-/*
-    let randomPlayerName = generate_random_string(10);
-    let subscribe = Message::Subscribe(subscribe { name: randomPlayerName.parse().unwrap() });
-    //let h = Message::Welcome(Welcome { version: 2 });
 
-
-    let mut tcpStream = TcpStream::connect("localhost:7878");
-    match tcpStream {
-        Ok(mut tcpStream) => {
-            // Hello
-            let helloMessage = Message::Hello;
-            let serializeHM = serializeMessage(&helloMessage);
-            writeMessage(&tcpStream, &serializeHM);
-            // Welcome
-            let welcomeMessageLenght = messageLength(&tcpStream);
-            let welcomeMessage = readMessage(&tcpStream, welcomeMessageLenght);
-            println!("{:?}", welcomeMessage);
-            // Subcription player 1
-            let serializeSubscribe = serializeMessage(&subscribe);
-            writeMessage(&tcpStream, &serializeSubscribe);
-            // SubscribeResult player 1
-            let SubscribeResultLength = messageLength(&tcpStream);
-            let SubscribeResult = readMessage(&tcpStream, SubscribeResultLength);
-            println!("{:?}", SubscribeResult);
-
-
-*/
 
     let playerName = generate_random_string(10);
     let mut tcpStream1 = connect_and_subscribe_player(playerName.clone());
@@ -202,15 +173,18 @@ fn pick_random_player_name(player_names: &Vec<String>) -> String {
         }
         count
     }
-/*    fn is_hashcode_valid(hashcode: &str, complexity: u32) -> bool {
-        determine_complexity(hashcode) > complexity
+
+fn get_type(dataType: Message) -> String {
+    match dataType {
+        Message::Challenge(_) => {
+            "Challenge".to_string()
+        }
+        _ => {}
     }
-    fn is_hashcode_valid_with_seed(hashcode: &str, complexity: u32, seed: u32) -> bool {
-        determine_complexity(hashcode) > complexity
-    }
-    fn is_hashcode_valid_with_seed_and_message(hashcode: &str, complexity: u32, seed: u32, message: &str) -> bool {
-        determine_complexity(hashcode) > complexity
-    }*/
+}
+
+
+
 
     fn format_seed_and_message(seed: u32, message: &str) -> String {
         let format = format!("{:x}", seed);

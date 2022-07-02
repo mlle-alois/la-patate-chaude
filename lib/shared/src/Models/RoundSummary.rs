@@ -3,7 +3,7 @@ use serde_json;
 
 use crate::Models::ReportedChallengeResult::ReportedChallengeResult;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct RoundSummary {
     challenge: String,
     chain: Vec<ReportedChallengeResult>,

@@ -4,7 +4,7 @@ use crate::Models::PublicLeaderBoard::PublicLeaderBoard;
 
 use crate::Models::ReportedChallengeResult::ReportedChallengeResult;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize,PartialEq)]
 pub struct EndOfGame {
     leader_board: PublicLeaderBoard
 }

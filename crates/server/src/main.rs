@@ -10,33 +10,54 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 use serde_json;
+use shared::Models::Challenge::Challenge;
+use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
+use shared::Models::ChallengeResult::ChallengeResult;
+use shared::Models::MD5HashCashInput::MD5HashCashInput;
+use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
+use shared::Models::message::Message;
 
 fn main() {
-    println!("Hello, world!");
+  /*  println!("Hello, world!");
     let complexity = 4;
     let message = "hello";
     let hashCode = generate_hash(complexity,message);
-    println!("test : {:?}", create_seed(9,255));
+    println!("test : {:?}", create_seed(9,255));*/
+   // let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
+    //let mut result:MD5HashCashInput = MD5HashCashInput { seed: 0, hashcode: "".to_string() };
+    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+        answer: MD5HashCash(generate_hash(9,"hello")),
+        next_target: "test".to_string(),
+
+    });
+
+    let challengeType = get_type(challengeResultMessage);
+    println!("{:?}", challengeType);
 }
-fn generate_hash(complexity :u32,message: &str){
+fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
     let mut verif = false;
-    let mut index = 1;
+    let mut index = 0;
+    let mut hash:String;
     let mut seed:String;
+    let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
     loop  {
         seed = create_seed(complexity,index);
         let elem = format!("{}{}", seed, message);
-       // println!("elem : {:?}", elem);
+        // println!("elem : {:?}", elem);
         let hashcode = md5::compute(elem);
-        println!("seed : {:?} hashcode : {:?} ", seed,hashcode);
-        let str: String =format!("{:x}", hashcode);
-       // println!("hashcode : {:?}", str);
-        verif=is_hashcode_valid(str,complexity);
-        index=index+1;
+        //   println!("seed : {:?} hashcode : {:?} ", seed,hashcode);
+        hash =format!("{:x}", hashcode);
+        // println!("hashcode : {:?}", str);
+        verif=is_hashcode_valid(hash,complexity);
         if(verif){
-            println!("hashcode : {:?}", hashcode);
+            //  println!("hashcode : {:?}", hashcode);
+            result.seed= index as u64;
+            result.hashcode=format!("{:x}", hashcode);
             break;
         }
+        index=index+1;
     }
+    result
 }
 fn create_seed(complexity :u32,val: u32)->String{
     let elem = format!("{:x}", val);
@@ -55,6 +76,20 @@ fn convert_to_binary_from_hex(hex: String) -> String {
 
     to_binary
 }
+
+fn get_type(dataType: Message) -> String {
+    match dataType {
+        Message::Challenge(_) => {
+            "Challenge".to_string()
+        }
+        Message::ChallengeResult(_) => {
+            "ChallengeResult".to_string()
+        }
+        _ => {"".to_string()}
+    }
+}
+
+
 fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
    let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
     println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
