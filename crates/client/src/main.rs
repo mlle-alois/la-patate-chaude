@@ -275,7 +275,7 @@ fn create_seed(val: u32)->String{
     hexa
 }
 fn convert_to_binary_from_hex(hex: String) -> String {
-    let to_binary = hex[2 ..]
+    let to_binary = hex
         .chars()
         .map(|c| to_binary(c))
         .collect();
