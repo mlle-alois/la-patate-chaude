@@ -251,17 +251,18 @@ fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
     let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
     loop  {
         seed = create_seed(index);
+        println!("seed : {:?} ", seed);
         let elem = format!("{}{}", seed, message);
         // println!("elem : {:?}", elem);
         let hashcode = md5::compute(elem);
-     //   println!("seed : {:?} hashcode : {:?} ", seed,hashcode);
+        //   println!("seed : {:?} hashcode : {:?} ", seed,hashcode);
         hash =format!("{:x}", hashcode);
         // println!("hashcode : {:?}", str);
         verif=is_hashcode_valid(hash,complexity);
         if(verif){
-          //  println!("hashcode : {:?}", hashcode);
+            //  println!("hashcode : {:?}", hashcode);
             result.seed= index as u64;
-            result.hashcode=format!("{:x}", hashcode);
+            result.hashcode=format!("{:x}", hashcode).to_uppercase();
             break;
         }
         index=index+1;
@@ -274,15 +275,14 @@ fn create_seed(val: u32)->String{
     // println!("{}", elem);
     hexa.to_uppercase()
 }
-
 fn convert_to_binary_from_hex(hex: String) -> String {
     let to_binary = hex
         .chars()
         .map(|c| to_binary(c))
         .collect();
-
     to_binary
 }
+
 fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
     let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
    // println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);

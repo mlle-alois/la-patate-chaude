@@ -20,8 +20,8 @@ use shared::Models::message::Message;
 
 fn main() {
     println!("Hello, world!");
-    let complexity = 9;
-    let message = "hello";
+    let complexity = 2;
+    let message = "My chatty bed paints the Bernardo's lazy bicycle.";
     let hashCode = generate_hash(complexity,message);
     println!("hashcode : {:?} ", hashCode);
 
@@ -47,7 +47,7 @@ fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
         if(verif){
             //  println!("hashcode : {:?}", hashcode);
             result.seed= index as u64;
-            result.hashcode=format!("{:x}", hashcode);
+            result.hashcode=format!("{:x}", hashcode).to_uppercase();
             break;
         }
         index=index+1;
