@@ -56,17 +56,15 @@ fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
 }
 
 fn create_seed(val: u32)->String{
-
     let hexa= format!("{:01$x}", val, 16);
     // println!("{}", elem);
-    hexa
+    hexa.to_uppercase()
 }
 fn convert_to_binary_from_hex(hex: String) -> String {
     let to_binary = hex
         .chars()
         .map(|c| to_binary(c))
         .collect();
-
     to_binary
 }
 
