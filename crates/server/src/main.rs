@@ -21,7 +21,7 @@ use shared::Models::message::Message;
 fn main() {
     println!("Hello, world!");
     let complexity = 2;
-    let message = "My chatty bed paints the Bernardo's lazy bicycle.";
+    let message = "A chatty the Bernardo'sory carries my smart spoon.";
     let hashCode = generate_hash(complexity,message);
     println!("hashcode : {:?} ", hashCode);
 

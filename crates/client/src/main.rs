@@ -48,19 +48,24 @@ fn main() {
 
         // Challenge OR RoundSummary
         let messageLenght = messageLength(&tcpStream1);
-        let message = readMessage(&tcpStream1, messageLenght);
+        let mut message = readMessage(&tcpStream1, messageLenght);
         println!("{:?}yo", message);
 
-        let get_type = get_type(&message);
+        let mut messageType = get_type(&message);
 
+        while messageType == "Challenge" {
+            //if get_type == "Challenge" {
+                processChallenge(&target, &mut tcpStream1, &message);
 
-        if get_type == "Challenge" {
-            processChallenge(&target, &mut tcpStream1, &message);
+                // RoundSummary
+                let roundSummaryLenght = messageLength(&tcpStream1);
+                let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
+                println!("{:?}", roundSummary);
 
-            // RoundSummary
-            let roundSummaryLenght = messageLength(&tcpStream1);
-            let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
-            println!("{:?}", roundSummary);
+            messageType = get_type(&roundSummary);
+            message = roundSummary;
+
+            //}
         }
 
 
@@ -282,18 +287,26 @@ fn convert_to_binary_from_hex(hex: String) -> String {
         .collect();
     to_binary
 }
+/*fn convert_to_binary_from_hex(hex: String) -> String {
+    let to_binary = hex
+        .chars()
+        .map(|c| to_binary(c))
+        .collect();
+    to_binary
+}*/
 
 fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
-    let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
-   // println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
-    let mut verif = true;
-    for index in 0..complexity {
-        if(val_in_binary.chars().nth(index as usize).unwrap() != '0'){
-            verif = false;
-        }
-    }
-    verif
+let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
+println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
+let mut verif = true;
+for index in 0..complexity {
+if(val_in_binary.chars().nth(index as usize).unwrap() != '0'){
+verif = false;
 }
+}
+verif
+}
+
 fn to_binary(c: char) -> String {
     let b = match c {
         '0' => "0000",
@@ -345,7 +358,6 @@ fn to_binary(c: char) -> String {
             Err(err) => panic!("Cannot connect : {err}")
         }
     }
-
 
 
 
