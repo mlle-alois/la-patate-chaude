@@ -19,23 +19,39 @@ use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
 use shared::Models::message::Message;
 
 fn main() {
-  /*  println!("Hello, world!");
-    let complexity = 4;
-    let message = "hello";
-    let hashCode = generate_hash(complexity,message);
-    println!("test : {:?}", create_seed(9,255));*/
-   // let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
+    println!("Hello, world!");
+   /* let complexity = 1;
+    let message = "Our red baker buys our lazy tree.";
+    let hashCode = generate_hash(complexity,message);*/
+    //println!("test : {:?}", create_seed(1,255));
+    //let mut result:MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
     //let mut result:MD5HashCashInput = MD5HashCashInput { seed: 0, hashcode: "".to_string() };
-   /* let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
-        answer: MD5HashCash(generate_hash(9,"hello")),
+    /*
+    {"Challenge":{"MD5HashCash":{"complexity":1,"message":"Our red baker buys our lazy tree."}
+    */
+    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+        answer: MD5HashCash(generate_hash(1,"Our red baker buys our lazy tree.")),
         next_target: "test".to_string(),
-
     });
+    let endOfGameString = {"EndOfGame\":{\"leader_board\":[{\"name\":\"jDA5uVaf4w\",\"stream_id\":\"127.0.0.1:43246\",\"score\":0,\"steps\":0,\"is_active\":false,\"total_used_time\":0.0},{\"name\":\"KMPMXW0D3K\",\"stream_id\":\"127.0.0.1:43248\",\"score\":0,\"steps\":0,\"is_active\":true,\"total_used_time\":0.0}]}}";
+    let endOfGameMessage = serde_json::from_str(&endOfGameString).unwrap();
+        println!("{:?}", endOfGameMessage);
+    /*let hash = generate_hash(1,"Our red baker buys our lazy tree.");
+    println!("{:?}", hash);*/
+    let hash = generate_hash(9,"hello");
+    println!("{:?}", hash);
+
+    let is_valid = is_hashcode_valid(hash.hashcode, 9);
+    println!("{:?}", is_valid);
+
+    let digest = md5::compute(b"Our red baker buys our lazy tree.");
+    assert_eq!(format!("{:x}", digest), "c3fcd3d76192e4007dfb496cca67e13b");
 
     let challengeType = get_type(challengeResultMessage);
-    println!("{:?}", challengeType);*/
-    let obj = json!({"PublicLeaderBoard": Array([Object({"is_active": Bool(true), "name": String("2xjxkuzw6K"), "score": Number(0), "steps": Number(0), "stream_id": String("127.0.0.1:55990"), "total_used_time": Number(0.0)})])});
-    println!("publicLeaderBoardjson : {:?}", publicLeaderBoardjson["PublicLeaderBoard"][0]);
+    println!("{:?}", challengeType);
+
+    /*let obj = json!({"PublicLeaderBoard": Array([Object({"is_active": Bool(true), "name": String("2xjxkuzw6K"), "score": Number(0), "steps": Number(0), "stream_id": String("127.0.0.1:55990"), "total_used_time": Number(0.0)})])});
+    println!("publicLeaderBoardjson : {:?}", publicLeaderBoardjson["PublicLeaderBoard"][0]);*/
 }
 fn generate_hash(complexity :u32,message: &str) -> MD5HashCashOutput{
     let mut verif = false;
@@ -97,11 +113,14 @@ fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
    let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
     println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
     let mut verif = true;
+    let mut index = 0;
    for index in 0..complexity {
         if(val_in_binary.chars().nth(index as usize).unwrap() != '0'){
             verif = false;
         }
     }
+    // If the number of 0s is > complexity, the hashcode is valid.
+    println!("{:?}",verif);
     verif
 }
 

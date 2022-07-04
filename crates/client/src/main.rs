@@ -36,62 +36,69 @@ fn main() {
         let mut publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
         println!("{:?}", publicLeaderBoard);
 
-        /*let other_players = get_other_players_name(&publicLeaderBoard,&playerName);
+        if get_type(&publicLeaderBoard) == "EndOfGame" {
+            break;
+        }
+
+
+        let other_players = get_other_players_name(&publicLeaderBoard,&playerName);
         println!("{:?}", other_players);
-        let target = pick_random_player_name(&other_players);*/
+        let target = pick_random_player_name(&other_players);
 
 
-        // Challenge
+        // Challenge OR RoundSummary
         let messageLenght = messageLength(&tcpStream1);
         let message = readMessage(&tcpStream1, messageLenght);
         println!("{:?}yo", message);
 
+        let get_type = get_type(&message);
 
-        if get_type(&message) == "Challenge" {
-            let challenge = message;
 
-            match challenge {
-                Message::Challenge(challenge) => {
-                        println!("md5: {:?}yo", challenge);
-                        let md5 = &challenge;
-                    match md5 {
-                        Challenge::MD5HashCash(md5) => {
-                            println!("md5: {:?}yo", md5.complexity);
-                            println!("md5: {:?}yo", md5.message);
-                            // ChallengeResult
-                            let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
-                                answer: MD5HashCash(generate_hash(md5.complexity,&md5.message.clone())),
-                                next_target: playerName.to_string(),
+        if get_type == "Challenge" {
+            processChallenge(&target, &mut tcpStream1, &message);
 
-                            });
-                            let serializeCR = serializeMessage(&challengeResultMessage);
-                            writeMessage(&tcpStream1, &serializeCR);
-                        }
-                        _ => {
-                            panic!("Not a MD5HashCash");
-                        }
-                    }
-                }
-                _ => {
-                    panic!("Not a Challenge");
-                }
-            }
+            // RoundSummary
+            let roundSummaryLenght = messageLength(&tcpStream1);
+            let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
+            println!("{:?}", roundSummary);
         }
 
-        // RoundSummary
-        let roundSummaryLenght = messageLength(&tcpStream1);
-        let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
-        println!("{:?}", roundSummary);
 
     }
-            /*
-            // EndOfGame
-            let endOfGameLenght = messageLength(&tcpStream);
-            let endOfGame = readMessage(&tcpStream, endOfGameLenght);
-            println!("{:?}", endOfGame);*/
 
        // Err(err) => panic!("Cannot connect : {err}")
     }
+
+fn processChallenge(playerName: &String, tcpStream1: &mut TcpStream, message: &Message) {
+    let challenge = message;
+
+    match challenge {
+        Message::Challenge(challenge) => {
+            println!("md5: {:?}yo", challenge);
+            let md5 = &challenge;
+            match md5 {
+                Challenge::MD5HashCash(md5) => {
+                    println!("md5: {:?}yo", md5.complexity);
+                    println!("md5: {:?}yo", md5.message);
+                    // ChallengeResult
+                    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+                        answer: MD5HashCash(generate_hash(md5.complexity, &md5.message.clone())),
+                        next_target: playerName.to_string(),
+
+                    });
+                    let serializeCR = serializeMessage(&challengeResultMessage);
+                    writeMessage(&tcpStream1, &serializeCR);
+                }
+                _ => {
+                    panic!("Not a MD5HashCash");
+                }
+            }
+        }
+        _ => {
+            panic!("Not a Challenge");
+        }
+    }
+}
 
 fn get_type(dataType: &Message) -> String {
     match dataType {
@@ -277,7 +284,7 @@ fn convert_to_binary_from_hex(hex: String) -> String {
 }
 fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
     let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
-    println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
+   // println!("hashcode : {:?} val_in_binary : {:?}", hashcode,val_in_binary);
     let mut verif = true;
     for index in 0..complexity {
         if(val_in_binary.chars().nth(index as usize).unwrap() != '0'){
@@ -286,7 +293,6 @@ fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
     }
     verif
 }
-
 fn to_binary(c: char) -> String {
     let b = match c {
         '0' => "0000",
