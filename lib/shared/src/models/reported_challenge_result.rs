@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize};
-use serde_json;
-use crate::Models::ChallengeValue::ChallengeValue;
+use crate::models::challenge_value::ChallengeValue;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct ReportedChallengeResult {

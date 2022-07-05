@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json;
-
-use crate::Models::ReportedChallengeResult::ReportedChallengeResult;
+use crate::models::reported_challenge_result::ReportedChallengeResult;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct RoundSummary {

@@ -1,6 +1,5 @@
-use crate::Models::PublicPlayer::PublicPlayer;
+use crate::models::public_player::PublicPlayer;
 use serde::{Serialize, Deserialize};
-use serde_json;
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 
 pub struct PublicLeaderBoard {

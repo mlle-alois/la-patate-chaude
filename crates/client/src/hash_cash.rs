@@ -1,27 +1,23 @@
 extern crate core;
 
 use std::borrow::Borrow;
-use std::fmt::format;
 use std::io::{Read, Write};
-use std::mem::size_of;
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::vec;
-use serde::{Deserialize, Serialize};
 use serde_json;
-use shared::Models::{ChallengeAnswer, ChallengeValue, message};
-use shared::Models::ChallengeResult::ChallengeResult;
-use shared::Models::message::Message;
-use shared::Models::message::Message::{PublicLeaderBoard, Subscribe, Welcome};
-use shared::Models::subscribe::subscribe;
-use shared::Models::welcome::welcome;
+use shared::models::challenge_result::ChallengeResult;
+use shared::models::message::Message;
+use shared::models::subscribe::Subscribe;
 use rand::Rng;
 use serde_json::json;
-use shared::Models::Challenge::Challenge;
-use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
-use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
-use shared::Models::PublicPlayer::PublicPlayer;
+use shared::models::challenge::Challenge;
+use shared::models::challenge_answer::ChallengeAnswer::MD5HashCash;
+use shared::models::md5hash_cash_output::MD5HashCashOutput;
 
-pub fn processChallenge(playerName: &String, tcpStream1: &mut TcpStream, message: &Message) {
+
+
+
+pub fn process_challenge(player_name: &String, tcp_stream1: &mut TcpStream, message: &Message) {
     let challenge = message;
 
     match challenge {
@@ -33,17 +29,15 @@ pub fn processChallenge(playerName: &String, tcpStream1: &mut TcpStream, message
                     //println!("md5: {:?}yo", md5.complexity);
                     //println!("md5: {:?}yo", md5.message);
                     // ChallengeResult
-                    let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
+                    let challenge_result_message = Message::ChallengeResult(ChallengeResult {
                         answer: MD5HashCash(generate_hash(md5.complexity, &md5.message.clone())),
-                        next_target: playerName.to_string(),
+                        next_target: player_name.to_string(),
 
                     });
-                    let serializeCR = serializeMessage(&challengeResultMessage);
-                    writeMessage(&tcpStream1, &serializeCR);
+                    let serialize_cr = serialize_message(&challenge_result_message);
+                    write_message(&tcp_stream1, &serialize_cr);
                 }
-                _ => {
-                    panic!("Not a MD5HashCash");
-                }
+
             }
         }
         _ => {
@@ -52,8 +46,8 @@ pub fn processChallenge(playerName: &String, tcpStream1: &mut TcpStream, message
     }
 }
 
-pub fn get_type(dataType: &Message) -> String {
-    match dataType {
+pub fn get_type(data_type: &Message) -> String {
+    match data_type {
         Message::Challenge(_) => {
             "Challenge".to_string()
         }
@@ -85,23 +79,23 @@ pub fn get_type(dataType: &Message) -> String {
     }
 }
 
-fn serializeMessage(msg: &Message) -> String {
+fn serialize_message(msg: &Message) -> String {
     let serialized = serde_json::to_string(&msg);
     match serialized {
-        Ok(mut str) => {
+        Ok(str) => {
             println!("ok:{str}");
             str
         }
-        Err(err) => {
+        Err(_) => {
             panic!("failed");
         }
     }
 }
 
-pub fn writeMessage(mut stream: &TcpStream, content: &String) {
+pub fn write_message(mut stream: &TcpStream, content: &String) {
     println!("{}", content);
-    let mut messageLenght: u32 = content.len() as u32;
-    let prefix = messageLenght.to_be_bytes();
+    let  message_length: u32 = content.len() as u32;
+    let prefix = message_length.to_be_bytes();
     println!("{:?}", prefix);
 
     let message = content.as_bytes();
@@ -110,19 +104,19 @@ pub fn writeMessage(mut stream: &TcpStream, content: &String) {
     stream.write_all(&message);
 }
 
-pub fn messageLength(mut stream: &TcpStream) -> usize {
-    let mut bufferLenght = [0u8; 4];
-    let res = stream.read(&mut bufferLenght).unwrap();
-    let value = u32::from_be_bytes(bufferLenght);
+pub fn message_length(mut stream: &TcpStream) -> usize {
+    let mut buffer_length = [0u8; 4];
+    stream.read(&mut buffer_length).unwrap();
+    let value = u32::from_be_bytes(buffer_length);
     println!("{:?} res", &value);
     *&value as usize
 }
 
-pub fn readMessage(mut stream: &TcpStream, messageLenght: usize) -> Message {
-    if messageLenght == 0 {
+pub fn read_message(mut stream: &TcpStream, message_lenght: usize) -> Message {
+    if message_lenght == 0 {
         return Message::Excluded("".to_string());
     }
-    let mut buffer = vec![0u8; messageLenght];
+    let mut buffer = vec![0u8; message_lenght];
     let res = stream.read(&mut buffer);
     match res {
         Ok(_) => {
@@ -138,13 +132,13 @@ pub fn readMessage(mut stream: &TcpStream, messageLenght: usize) -> Message {
     }
 }
 
-pub fn get_other_players_name(publicLeaderBoard: &Message, playerToExclude: &String) -> Vec<String> {
+pub fn get_other_players_name(public_leader_board: &Message, player_to_exclude: &String) -> Vec<String> {
     let mut other_players: Vec<String> = vec![];
-    let publicLeaderBoard = publicLeaderBoard.clone();
-    match publicLeaderBoard {
-        Message::PublicLeaderBoard(publicLeaderBoard) => {
-            for player in publicLeaderBoard {
-                if player.name.ne(playerToExclude) {
+    let public_leader_board_tmp = public_leader_board.clone();
+    match public_leader_board_tmp {
+        Message::PublicLeaderBoard(players) => {
+            for player in players {
+                if player.name.ne(player_to_exclude) {
                     other_players.push(player.name.clone());
                 }
             }
@@ -205,7 +199,7 @@ pub fn generate_hash(complexity: u32, message: &str) -> MD5HashCashOutput {
         hash = format!("{:x}", hashcode);
         // println!("hashcode : {:?}", str);
         verif = is_hashcode_valid(hash, complexity);
-        if (verif) {
+        if verif {
             //  println!("hashcode : {:?}", hashcode);
             result.seed = index as u64;
             result.hashcode = format!("{:x}", hashcode).to_uppercase();
@@ -231,11 +225,11 @@ pub fn convert_to_binary_from_hex(hex: String) -> String {
 }
 
 pub fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
-    let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
+    let val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
     //println!("hashcode : {:?} val_in_binary : {:?}", hashcode, val_in_binary);
     let mut verif = true;
     for index in 0..complexity {
-        if (val_in_binary.chars().nth(index as usize).unwrap() != '0') {
+        if val_in_binary.chars().nth(index as usize).unwrap() != '0' {
             verif = false;
         }
     }
@@ -266,28 +260,28 @@ pub fn to_binary(c: char) -> String {
 }
 
 pub fn connect_and_subscribe_player(name: String) -> TcpStream {
-    let subscribe = Message::Subscribe(subscribe { name: name.parse().unwrap() });
+    let subscribe = Message::Subscribe(Subscribe { name: name.parse().unwrap() });
 
 
-    let mut tcpStream = TcpStream::connect("localhost:7878");
-    match tcpStream {
-        Ok(mut tcpStream) => {
+    let tcp_stream = TcpStream::connect("localhost:7878");
+    match tcp_stream {
+        Ok(tcp_stream_tmp) => {
             // Hello
-            let helloMessage = Message::Hello;
-            let serializeHM = serializeMessage(&helloMessage);
-            writeMessage(&tcpStream, &serializeHM);
+            let hello_message = Message::Hello;
+            let serialize_hm = serialize_message(&hello_message);
+            write_message(&tcp_stream_tmp, &serialize_hm);
             // Welcome
-            let welcomeMessageLenght = messageLength(&tcpStream);
-            let welcomeMessage = readMessage(&tcpStream, welcomeMessageLenght);
-            println!("{:?}", welcomeMessage);
+            let welcome_message_lenght = message_length(&tcp_stream_tmp);
+            let welcome_message = read_message(&tcp_stream_tmp, welcome_message_lenght);
+            println!("{:?}", welcome_message);
             // Subcription player 1
-            let serializeSubscribe = serializeMessage(&subscribe);
-            writeMessage(&tcpStream, &serializeSubscribe);
-            // SubscribeResult player 1
-            let SubscribeResultLength = messageLength(&tcpStream);
-            let SubscribeResult = readMessage(&tcpStream, SubscribeResultLength);
-            println!("{:?}", SubscribeResult);
-            tcpStream
+            let serialize_subscribe = serialize_message(&subscribe);
+            write_message(&tcp_stream_tmp, &serialize_subscribe);
+            // subscribe_result player 1
+            let subscribe_result_length = message_length(&tcp_stream_tmp);
+            let subscribe_result = read_message(&tcp_stream_tmp, subscribe_result_length);
+            println!("{:?}", subscribe_result);
+            tcp_stream_tmp
         }
 
         Err(err) => panic!("Cannot connect : {err}")

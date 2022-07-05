@@ -1,8 +1,7 @@
 use serde::{Serialize, Deserialize};
-use serde_json;
 
 #[derive(Debug , Serialize, Deserialize, PartialEq)]
-pub struct welcome{
+pub struct Welcome {
     pub version:u8
 }
 

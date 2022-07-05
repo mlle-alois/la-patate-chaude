@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use serde_json;
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct MD5HashCashInput {
     // complexity in bits

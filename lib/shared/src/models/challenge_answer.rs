@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json;
-
-use crate::Models::MD5HashCashOutput::MD5HashCashOutput;
+use crate::models::md5hash_cash_output::MD5HashCashOutput;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ChallengeAnswer {

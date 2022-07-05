@@ -1,71 +1,55 @@
 extern crate core;
-pub mod HashCash;
-use std::borrow::Borrow;
-use std::fmt::format;
-use std::io::{Read, Write};
-use std::mem::size_of;
-use std::net::{SocketAddr, TcpListener, TcpStream};
-use std::vec;
-use serde::{Deserialize, Serialize};
+pub mod hash_cash;
 use serde_json;
-use shared::Models::{ChallengeAnswer, ChallengeValue, message};
-use shared::Models::ChallengeResult::ChallengeResult;
-use shared::Models::message::Message;
-use shared::Models::message::Message::{PublicLeaderBoard, Subscribe, Welcome};
-use shared::Models::subscribe::subscribe;
-use shared::Models::welcome::welcome;
-use rand::Rng;
-use serde_json::json;
-use shared::Models::Challenge::Challenge;
-
-use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
-use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
-use shared::Models::PublicPlayer::PublicPlayer;
-use crate::HashCash::{connect_and_subscribe_player, generate_random_string,
-                      get_other_players_name, get_type, messageLength,
-                      pick_random_player_name, processChallenge, readMessage
+use crate::hash_cash::{connect_and_subscribe_player, generate_random_string,
+                       get_other_players_name, get_type, message_length,
+                       pick_random_player_name, process_challenge, read_message
 };
 
 fn main() {
-    let playerName = generate_random_string(10);
-    let mut tcpStream1 = connect_and_subscribe_player(playerName.clone());
+    let player_name = generate_random_string(10);
+    let mut tcp_stream1 = connect_and_subscribe_player(player_name.clone());
     /** Round **/
 
 
     loop {
         // PublicLeaderBoard
-        let publicLeaderBoardLenght = messageLength(&tcpStream1);
-        let mut publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
-        println!("{:?}", publicLeaderBoard);
+        let public_leader_board_length = message_length(&tcp_stream1);
+        let  public_leader_board = read_message(&tcp_stream1, public_leader_board_length);
+        println!("{:?}", public_leader_board);
 
-        let endLoopType =get_type(&publicLeaderBoard);
-        if endLoopType == "EndOfGame" || endLoopType == "Excluded" {
+        let end_loop_type =get_type(&public_leader_board);
+        if end_loop_type == "EndOfGame" {
+            break;
+        }
+        if end_loop_type == "Excluded" {
+            println!("Player {:?} is excluded", player_name);
             break;
         }
 
 
-        let other_players = get_other_players_name(&publicLeaderBoard, &playerName);
+        let other_players = get_other_players_name(&public_leader_board, &player_name);
         println!("{:?}", other_players);
         let target = pick_random_player_name(&other_players);
 
 
         // Challenge OR RoundSummary
-        let messageLenght = messageLength(&tcpStream1);
-        let mut message = readMessage(&tcpStream1, messageLenght);
+        let message_lenght = message_length(&tcp_stream1);
+        let mut message = read_message(&tcp_stream1, message_lenght);
         println!("{:?}", message);
 
-        let mut messageType = get_type(&message);
+        let mut message_type = get_type(&message);
 
-        while messageType == "Challenge" {
-            processChallenge(&target, &mut tcpStream1, &message);
+        while message_type == "Challenge" {
+            process_challenge(&target, &mut tcp_stream1, &message);
 
             // RoundSummary
-            let roundSummaryLenght = messageLength(&tcpStream1);
-            let roundSummary = readMessage(&tcpStream1, roundSummaryLenght);
-            println!("{:?}", roundSummary);
+            let round_summary_lenght = message_length(&tcp_stream1);
+            let round_summary = read_message(&tcp_stream1, round_summary_lenght);
+            println!("{:?}", round_summary);
 
-            messageType = get_type(&roundSummary);
-            message = roundSummary;
+            message_type = get_type(&round_summary);
+            message = round_summary;
         }
     }
 }

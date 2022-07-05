@@ -1,7 +1,6 @@
-use crate::Models::MD5HashCashInput::MD5HashCashInput;
+use crate::models::md5hash_cash_input::MD5HashCashInput;
 use serde::{Serialize, Deserialize};
-use serde_json;
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub  enum Challenge {
+pub enum Challenge {
     MD5HashCash(MD5HashCashInput)
 }
