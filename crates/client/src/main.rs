@@ -1,5 +1,7 @@
 extern crate core;
 pub mod hash_cash;
+mod TestHashCash;
+
 use serde_json;
 use crate::hash_cash::{connect_and_subscribe_player, generate_random_string,
                        get_other_players_name, get_type, message_length,
