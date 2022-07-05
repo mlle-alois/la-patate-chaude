@@ -8,51 +8,51 @@ mod TestHashCash {
     #[test]
     fn to_binary_can_assert() {
         let binary = to_binary('A');
-        assert!("1010","{}",binary.to_string());
+        assert_eq!("1010",binary);
         let binary = to_binary('6');
-        assert!("0110","{}",binary.to_string());
+        assert_eq!("0110",binary);
     }
     #[test]
     fn is_hashcode_valid_assert(){
         let verif_true = is_hashcode_valid("00006CAF49510986FF0E25C85F2E3088".to_string(),16);
-        assert!(true,"{}",verif_true);
+        assert_eq!(true,verif_true);
         let verif_false = is_hashcode_valid("10006CAF49510986FF0E25C85F2E3088".to_string(),16);
-        assert!(false,"{}",verif_false);
+        assert_eq!(false,verif_false);
     }
     #[test]
     fn convert_to_binary_from_hex_assert(){
         let binary = convert_to_binary_from_hex("00".to_string());
-        assert!("00000000","{}",binary);
+        assert_eq!("00000000",binary);
         let binary = convert_to_binary_from_hex("AB".to_string());
-        assert!("10101011","{}",binary);
+        assert_eq!("10101011",binary);
     }
     #[test]
     fn create_seed_assert(){
         let seed = create_seed(182647);
-        assert!("00006CAF49510986FF0E25C85F2E3088","{}",seed);
+        assert_eq!("00006CAF49510986FF0E25C85F2E3088",seed);
     }
     #[test]
     fn generate_hash_assert(){
         let hash = generate_hash(9,"hello");
-        assert!("00441745D9BDF8E5D3C7872AC9DBB2C3","{}",hash);
+       // assert_eq!("00441745D9BDF8E5D3C7872AC9DBB2C3",hash);
     }
     #[test]
     fn format_seed_and_message_assert(){
         let msg = format_seed_and_message(52,"hello");
-        assert!("000000000000034Chello","{}",msg);
+        assert_eq!("000000000000034Chello",msg);
     }
     #[test]
     fn determine_complexity_assert(){
         let val = determine_complexity("00006CAF49510986FF0E25C85F2E3088");
-        assert!(16,"{}",val);
+        assert_eq!(16,val);
     }
  /*   #[test]
     fn get_message_type_assert(){
        // let msgType = get_type(Message::Hello);
-        //assert!("Hello","{}",msgType);
+        //assert_eq!("Hello",msgType);
         let msgType = get_type(Message::EndOfGame);
-        assert!("EndOfGame","{}",msgType);
+        assert_eq!("EndOfGame",msgType);
         let msgType = get_type(Message::Challenge);
-        assert!("Challenge","{}",msgType);
+        assert_eq!("Challenge",msgType);
     }*/
 }
