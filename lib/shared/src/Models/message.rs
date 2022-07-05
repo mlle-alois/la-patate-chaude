@@ -12,6 +12,7 @@ use crate::Models::RoundSummary::RoundSummary;
 
 #[derive(Debug, Serialize, Deserialize,PartialEq)]
 pub enum Message {
+    Excluded(String),
     Hello,
     Welcome(welcome),
     Subscribe(subscribe),

@@ -17,6 +17,7 @@ use shared::Models::welcome::welcome;
 use rand::Rng;
 use serde_json::json;
 use shared::Models::Challenge::Challenge;
+
 use shared::Models::ChallengeAnswer::ChallengeAnswer::MD5HashCash;
 use shared::Models::MD5HashCashOutput::MD5HashCashOutput;
 use shared::Models::PublicPlayer::PublicPlayer;
@@ -33,7 +34,8 @@ fn main() {
         let mut publicLeaderBoard = readMessage(&tcpStream1, publicLeaderBoardLenght);
         println!("{:?}", publicLeaderBoard);
 
-        if get_type(&publicLeaderBoard) == "EndOfGame" {
+        let endLoopType =get_type(&publicLeaderBoard);
+        if endLoopType == "EndOfGame" || endLoopType == "Excluded" {
             break;
         }
 
@@ -75,8 +77,8 @@ fn processChallenge(playerName: &String, tcpStream1: &mut TcpStream, message: &M
             let md5 = &challenge;
             match md5 {
                 Challenge::MD5HashCash(md5) => {
-                    println!("md5: {:?}yo", md5.complexity);
-                    println!("md5: {:?}yo", md5.message);
+                    //println!("md5: {:?}yo", md5.complexity);
+                    //println!("md5: {:?}yo", md5.message);
                     // ChallengeResult
                     let challengeResultMessage = Message::ChallengeResult(ChallengeResult {
                         answer: MD5HashCash(generate_hash(md5.complexity, &md5.message.clone())),
@@ -120,8 +122,8 @@ fn get_type(dataType: &Message) -> String {
         Message::EndOfGame(_) => {
             "EndOfGame".to_string()
         }
-        Message::PublicLeaderBoard(_) => {
-            "PublicLeaderBoard".to_string()
+        Message::Excluded(_) => {
+            "Excluded".to_string()
         }
         Message::RoundSummary(_) => {
             "RoundSummary".to_string()
@@ -157,15 +159,18 @@ fn writeMessage(mut stream: &TcpStream, content: &String) {
 
 fn messageLength(mut stream: &TcpStream) -> usize {
     let mut bufferLenght = [0u8; 4];
-    let res = stream.read_exact(&mut bufferLenght).unwrap();
+    let res = stream.read(&mut bufferLenght).unwrap();
     let value = u32::from_be_bytes(bufferLenght);
     println!("{:?} res", &value);
     *&value as usize
 }
 
 fn readMessage(mut stream: &TcpStream, messageLenght: usize) -> Message {
+    if messageLenght == 0 {
+        return Message::Excluded("".to_string());
+    }
     let mut buffer = vec![0u8; messageLenght];
-    let res = stream.read_exact(&mut buffer);
+    let res = stream.read(&mut buffer);
     match res {
         Ok(_) => {
             println!("{:?}", buffer);
@@ -239,7 +244,7 @@ fn generate_hash(complexity: u32, message: &str) -> MD5HashCashOutput {
     let mut result: MD5HashCashOutput = MD5HashCashOutput { seed: 0, hashcode: "".to_string() };
     loop {
         seed = create_seed(index);
-        println!("seed : {:?} ", seed);
+        //println!("seed : {:?} ", seed);
         let elem = format!("{}{}", seed, message);
         // println!("elem : {:?}", elem);
         let hashcode = md5::compute(elem);
@@ -274,7 +279,7 @@ fn convert_to_binary_from_hex(hex: String) -> String {
 
 fn is_hashcode_valid(hashcode: String, complexity: u32) -> bool {
     let mut val_in_binary = convert_to_binary_from_hex(hashcode.to_uppercase());
-    println!("hashcode : {:?} val_in_binary : {:?}", hashcode, val_in_binary);
+    //println!("hashcode : {:?} val_in_binary : {:?}", hashcode, val_in_binary);
     let mut verif = true;
     for index in 0..complexity {
         if (val_in_binary.chars().nth(index as usize).unwrap() != '0') {
