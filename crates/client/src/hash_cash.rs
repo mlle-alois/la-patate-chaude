@@ -14,9 +14,6 @@ use shared::models::challenge::Challenge;
 use shared::models::challenge_answer::ChallengeAnswer::MD5HashCash;
 use shared::models::md5hash_cash_output::MD5HashCashOutput;
 
-
-
-
 pub fn process_challenge(player_name: &String, tcp_stream1: &mut TcpStream, message: &Message) {
     let challenge = message;
 
@@ -79,7 +76,7 @@ pub fn get_type(data_type: &Message) -> String {
     }
 }
 
-fn serialize_message(msg: &Message) -> String {
+pub(crate) fn serialize_message(msg: &Message) -> String {
     let serialized = serde_json::to_string(&msg);
     match serialized {
         Ok(str) => {
@@ -132,9 +129,9 @@ pub fn read_message(mut stream: &TcpStream, message_lenght: usize) -> Message {
     }
 }
 
-pub fn get_other_players_name(public_leader_board: &Message, player_to_exclude: &String) -> Vec<String> {
+pub fn get_other_players_name(message: &Message, player_to_exclude: &String) -> Vec<String> {
     let mut other_players: Vec<String> = vec![];
-    let public_leader_board_tmp = public_leader_board.clone();
+    let public_leader_board_tmp = message.clone();
     match public_leader_board_tmp {
         Message::PublicLeaderBoard(players) => {
             for player in players {
@@ -156,31 +153,10 @@ pub fn pick_random_player_name(player_names: &Vec<String>) -> String {
     player_names[index].clone()
 }
 
-
-// generate random string of length 10
 pub fn generate_random_string(len: usize) -> String {
     let mut rng = rand::thread_rng();
     let random_string: String = (0..len).map(|_| rng.sample(rand::distributions::Alphanumeric)).collect();
     random_string
-}
-
-
-pub fn determine_complexity(hashcode: &str) -> u32 {
-    let mut count = 0;
-    for c in hashcode.chars() {
-        if c == '0' {
-            count += 1;
-        }
-    }
-    count
-}
-
-
-pub fn format_seed_and_message(seed: u32, message: &str) -> String {
-    let format = format!("{:x}", seed);
-    let hashcode = md5::compute(format.as_bytes());
-    let hashcode = format!("{:x}", hashcode);
-    format!("{}{}", hashcode, message)
 }
 
 pub fn generate_hash(complexity: u32, message: &str) -> MD5HashCashOutput {

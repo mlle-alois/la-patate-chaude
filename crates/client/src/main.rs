@@ -10,9 +10,8 @@ use crate::hash_cash::{connect_and_subscribe_player, generate_random_string,
 
 fn main() {
     let player_name = generate_random_string(10);
-    let mut tcp_stream1 = connect_and_subscribe_player(player_name.clone());
-    /** Round **/
 
+    let mut tcp_stream1 = connect_and_subscribe_player(player_name.clone());
 
     loop {
         // PublicLeaderBoard

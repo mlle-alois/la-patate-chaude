@@ -2,9 +2,28 @@ extern crate core;
 
 #[cfg(test)]
 mod TestHashCash {
+    use shared::models::challenge::Challenge;
+    use shared::models::challenge_answer::ChallengeAnswer::MD5HashCash;
+    use shared::models::challenge_result::ChallengeResult;
+    use shared::models::md5hash_cash_input::MD5HashCashInput;
+    use shared::models::message::Message;
+    use shared::models::public_player::PublicPlayer;
+    use shared::models::subscribe::Subscribe;
+    use shared::models::welcome::Welcome;
     use crate::get_type;
-    use crate::hash_cash::{convert_to_binary_from_hex, create_seed, determine_complexity, format_seed_and_message, generate_hash, is_hashcode_valid, to_binary};
+    use crate::hash_cash::{convert_to_binary_from_hex, create_seed,generate_random_string, serialize_message, generate_hash, is_hashcode_valid, to_binary};
 
+    #[test]
+    fn serialize_message_assert() {
+        let msg = serialize_message(&Message::Hello);
+        println!("ok:{msg}");
+        assert_eq!("\"Hello\"",msg);
+    }
+    #[test]
+    fn generate_random_string_assert() {
+        let ch = generate_random_string(6);
+        assert_eq!(6,ch.len());
+    }
     #[test]
     fn to_binary_can_assert() {
         let binary = to_binary('A');
@@ -28,8 +47,8 @@ mod TestHashCash {
     }
     #[test]
     fn create_seed_assert(){
-        let seed = create_seed(182647);
-        assert_eq!("00006CAF49510986FF0E25C85F2E3088",seed);
+        let seed = create_seed(52);
+        assert_eq!("0000000000000034",seed);
     }
     #[test]
     fn generate_hash_assert(){
@@ -37,22 +56,12 @@ mod TestHashCash {
        // assert_eq!("00441745D9BDF8E5D3C7872AC9DBB2C3",hash);
     }
     #[test]
-    fn format_seed_and_message_assert(){
-        let msg = format_seed_and_message(52,"hello");
-        assert_eq!("000000000000034Chello",msg);
-    }
-    #[test]
-    fn determine_complexity_assert(){
-        let val = determine_complexity("00006CAF49510986FF0E25C85F2E3088");
-        assert_eq!(16,val);
-    }
- /*   #[test]
     fn get_message_type_assert(){
-       // let msgType = get_type(Message::Hello);
-        //assert_eq!("Hello",msgType);
-        let msgType = get_type(Message::EndOfGame);
-        assert_eq!("EndOfGame",msgType);
-        let msgType = get_type(Message::Challenge);
-        assert_eq!("Challenge",msgType);
-    }*/
+        let msg_type = get_type(&Message::Hello);
+        assert_eq!("Hello",msg_type);
+        let msg_type = get_type(&Message::Welcome(Welcome{version: 2 as u8 }));
+        assert_eq!("Welcome",msg_type);
+        let msg_type = get_type(&Message::Subscribe(Subscribe{name: "test".parse().unwrap() }));
+        assert_eq!("Subscribe",msg_type);
+    }
 }
