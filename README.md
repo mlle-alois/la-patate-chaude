@@ -1,3 +1,18 @@
+#Soutenance Rust
+- Ichaï Chtitski
+- Haithem Limam
+- Aloïs Zimmermann-Rosenthal
+
+##Organisation du travail en tant qu'équipe
+Pour la réalisation de ce projet, nous avons majoritairement travaillé en mob programming et en pair programming durant 
+les sessions de cours prévues à cet effet ou bien de notre côté, en dehors de l'école, via des outils de communication
+comme Discord.
+Il n'y a pas eu de répartition spécifique des tâches, le travail était globalement groupé.
+
+##Démarche d'élaboration des différents composants du projet
+
+##Spécificités du projet
+
 # Projet Rust: *la Patate Chaude* <br> Architecture des Logiciels - 4<sup>ème</sup> année - ESGI
 
 Vous connaissez peut-être [l'expression](https://fr.wiktionary.org/wiki/patate_chaude)
