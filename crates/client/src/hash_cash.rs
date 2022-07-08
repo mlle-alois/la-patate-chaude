@@ -235,31 +235,32 @@ pub fn to_binary(c: char) -> String {
     b.to_string()
 }
 
-pub fn connect_and_subscribe_player(name: String) -> TcpStream {
-    let subscribe = Message::Subscribe(Subscribe { name: name.parse().unwrap() });
-
+pub fn connect_player(name: &String) -> TcpStream {
 
     let tcp_stream = TcpStream::connect("localhost:7878");
     match tcp_stream {
         Ok(tcp_stream_tmp) => {
-            // Hello
-            let hello_message = Message::Hello;
-            let serialize_hm = serialize_message(&hello_message);
-            write_message(&tcp_stream_tmp, &serialize_hm);
-            // Welcome
-            let welcome_message_lenght = message_length(&tcp_stream_tmp);
-            let welcome_message = read_message(&tcp_stream_tmp, welcome_message_lenght);
-            println!("{:?}", welcome_message);
-            // Subcription player 1
-            let serialize_subscribe = serialize_message(&subscribe);
-            write_message(&tcp_stream_tmp, &serialize_subscribe);
-            // subscribe_result player 1
-            let subscribe_result_length = message_length(&tcp_stream_tmp);
-            let subscribe_result = read_message(&tcp_stream_tmp, subscribe_result_length);
-            println!("{:?}", subscribe_result);
             tcp_stream_tmp
         }
-
         Err(err) => panic!("Cannot connect : {err}")
     }
+}
+
+pub fn subscribe_player(name: &String, tcp_stream_tmp: &TcpStream) {
+// Hello
+    let subscribe = Message::Subscribe(Subscribe { name: name.parse().unwrap() });
+    let hello_message = Message::Hello;
+    let serialize_hm = serialize_message(&hello_message);
+    write_message(&tcp_stream_tmp, &serialize_hm);
+    // Welcome
+    let welcome_message_lenght = message_length(&tcp_stream_tmp);
+    let welcome_message = read_message(&tcp_stream_tmp, welcome_message_lenght);
+    println!("{:?}", welcome_message);
+    // Subcription player 1
+    let serialize_subscribe = serialize_message(&subscribe);
+    write_message(&tcp_stream_tmp, &serialize_subscribe);
+    // subscribe_result player 1
+    let subscribe_result_length = message_length(&tcp_stream_tmp);
+    let subscribe_result = read_message(&tcp_stream_tmp, subscribe_result_length);
+    println!("{:?}", subscribe_result);
 }

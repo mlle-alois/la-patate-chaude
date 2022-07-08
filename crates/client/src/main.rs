@@ -2,24 +2,23 @@ extern crate core;
 pub mod hash_cash;
 mod TestHashCash;
 
+use std::net::TcpStream;
 use serde_json;
-use crate::hash_cash::{connect_and_subscribe_player, generate_random_string,
-                       get_other_players_name, get_type, message_length,
-                       pick_random_player_name, process_challenge, read_message
-};
+use crate::hash_cash::{connect_player, subscribe_player, generate_random_string, get_other_players_name, get_type, message_length, pick_random_player_name, process_challenge, read_message};
 
 fn main() {
-    let player_name = generate_random_string(10);
+    let player_name = generate_random_string(10).clone();
 
-    let mut tcp_stream1 = connect_and_subscribe_player(player_name.clone());
+    let mut tcp_stream1 = connect_player(&player_name);
+    subscribe_player(&player_name,&tcp_stream1);
 
     loop {
         // PublicLeaderBoard
         let public_leader_board_length = message_length(&tcp_stream1);
-        let  public_leader_board = read_message(&tcp_stream1, public_leader_board_length);
+        let public_leader_board = read_message(&tcp_stream1, public_leader_board_length);
         println!("{:?}", public_leader_board);
 
-        let end_loop_type =get_type(&public_leader_board);
+        let end_loop_type = get_type(&public_leader_board);
         if end_loop_type == "EndOfGame" {
             break;
         }
@@ -53,7 +52,11 @@ fn main() {
             message = round_summary;
         }
     }
+
+    //start_rounds(&player_name, &mut tcp_stream1);
 }
+
+
 
 
 
